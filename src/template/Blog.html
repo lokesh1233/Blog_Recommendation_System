@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Recommendation</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script>
+
+function movies_recommend(movie_Id, user_Id, title){
+
+ var entityList = document.getElementById("tracklist");
+ var entityListUser = document.getElementById("tracklistUser");
+ var entityListPopular = document.getElementById("tracklistPopular")
+that = this;
+this.entityList = entityList
+this.entityListUser = entityListUser
+that.entityListPopular = entityListPopular
+this.txt = title
+this.movie_Id = movie_Id
+this.user_Id = user_Id
+
+
+var xmlhttp = new XMLHttpRequest();
+<!--var url = 'SongsRecommend';-->
+
+var url = "recommend_popular_SVD/"+movie_Id+"/"+user_Id;
+
+<!--var data = JSON.stringify({movie:txt, user:100});-->
+var data = null;
+xmlhttp.open('GET', url, true);
+
+//Send the proper header information along with the request
+xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+xmlhttp.onreadystatechange = function() {//Call a function when the state changes.
+    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+
+          var response = JSON.parse(xmlhttp.responseText)
+          <!--mal.innerText = response.message;-->
+          var entity = response.item_similar;
+          if(title == undefined) title="";
+          that.entityList.innerHTML = "<h1>"+title+"</h1><h2>Similar Blogs</h2>";
+           for(var i in entity){
+           if(i%3 == 0){
+           that.entityList.innerHTML +=  ' <div class="row">'
+           }
+          that.entityList.innerHTML +=  '<div class="col-md-4"><div class="thumbnail"> <a onclick="setSelectedTestPlan(this);" data-brand='+i+'><div class="caption"><p>'+entity[i]+'</p></div></a></div></div>';
+          if(i%3 == 2){
+           that.entityList.innerHTML +=  ' </div>'
+           }
+          }
+
+  that.entityListUser.innerHTML = "<h2>Based on similar users</h2>"
+  var entity = response.item_SVD;;
+           for(var i in entity){
+           if(i%3 == 0){
+           that.entityListUser.innerHTML +=  ' <div class="row">'
+           }
+          that.entityListUser.innerHTML +=  '<div class="col-md-4"><div class="thumbnail"> <a onclick="setSelectedTestPlan(this);" data-brand='+i+'><div class="caption"><p>'+entity[i]+'</p></div></a></div></div>';
+          if(i%3 == 2){
+           that.entityListUser.innerHTML +=  ' </div>'
+           }
+          }
+
+  that.entityListPopular.innerHTML = "<h2>Popular Blogs</h2>"
+  var entity = response.item_popular;
+           for(var i in entity){
+           if(i%3 == 0){
+           that.entityListPopular.innerHTML +=  ' <div class="row">'
+           }
+          that.entityListPopular.innerHTML +=  '<div class="col-md-4"><div class="thumbnail"> <a onclick="setSelectedTestPlan(this);" data-brand='+i+'><div class="caption"><p>'+entity[i]+'</p></div></a></div></div>';
+          if(i%3 == 2){
+           that.entityListPopular.innerHTML +=  ' </div>'
+           }
+          }
+     //   alert("success");
+    }else if(xmlhttp.readyState == 4 && xmlhttp.status != 200){
+    //	alert("failure");
+   // mal.innerText = "";
+    that.entityList.innerText = "";
+    that.entityListUser.innerText = "";
+    }
+}
+xmlhttp.send(data);
+}
+
+function setSelectedTestPlan(th){
+<!--debugger;-->
+
+if(th.text != undefined){
+    movies_recommend(th.getAttribute('data-brand'), this.user_Id, th.text)
+    }else{
+    movies_recommend('ecfca5ab7518', this.user_Id)
+    }
+
+
+}
+
+
+// user list
+
+
+function userList_bind(){
+var usersList = document.getElementById("usersList")
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.open('GET', "userListSet", true);
+
+var data = null;
+
+//Send the proper header information along with the request
+xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+xmlhttp.onreadystatechange = function() {//Call a function when the state changes.
+    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+    var userData = JSON.parse(xmlhttp.responseText)["username"]
+    var selectHTML = "";
+    for(var i in userData) {
+        selectHTML += "<option value='" + i + "'>" + userData[i] + "</option>";
+    }
+    usersList.innerHTML = selectHTML;
+
+ }else if(xmlhttp.readyState == 4 && xmlhttp.status != 200){
+     usersList.innerHTML = ""
+    }
+}
+xmlhttp.send(data);
+
+}
+
+function userChanged(value){
+<!--debugger;-->
+movies_recommend(this.movie_Id, value)
+}
+
+
+function initial_loading(th){
+this.user_Id = '7bcec4b8c02e'
+setSelectedTestPlan(th)
+userList_bind()
+
+}
+
+
+
+window["onload"]=initial_loading;
+
+
+</script>
+</head>
+<body>
+ <h2>Blogs</h2>
+
+
+<div style="text-align: end;">
+<h3 style="display: inline;">USERS:</h3>
+<select id="usersList"   onchange='userChanged(this.value)'>
+
+</select>
+  </div>
+
+<div class="container" id="tracklist">
+
+</div>
+
+<div class="container" id="tracklistUser">
+
+</div>
+
+
+<div class="container" id="tracklistPopular">
+
+</div>
+
+
+</body>
+</html>
+
+
